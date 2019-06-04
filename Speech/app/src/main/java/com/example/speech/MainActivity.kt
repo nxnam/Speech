@@ -11,7 +11,7 @@ import android.speech.RecognizerIntent
 import android.util.Log
 import java.util.*
 import android.content.ComponentName
-
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -19,7 +19,21 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestStt()
+
+        button.setOnClickListener{
+            requestStt()
+        }
+    }
+
+    fun requestSdt() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US)
+        intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        )
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói vào số cần gọi...")
+        startActivityForResult(intent, 2)
 
     }
 
@@ -30,7 +44,7 @@ class MainActivity : AppCompatActivity() {
             RecognizerIntent.EXTRA_LANGUAGE_MODEL,
             RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
         )
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say something")
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói gì đó...")
         startActivityForResult(intent, 1)
 
     }
@@ -42,6 +56,12 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK && null != data) {
                     val result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                     handleText(result[0])
+                }
+            }
+            2 -> {
+                if (resultCode == Activity.RESULT_OK && null != data) {
+                    val result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                    call(result[0])
                 }
             }
         }
@@ -64,11 +84,29 @@ class MainActivity : AppCompatActivity() {
             openAppWithPackageName("com.android.chrome")
         }
         else if (text.toLowerCase().contains("gọi điện")){
-             openAppWithPackageName("com.android.phone")
+            requestSdt()
+        }
+        else if (text.toLowerCase().contains("bản đồ")){
+            openAppWithPackageName("com.google.android.apps.maps")
+        }
+        else if (text.toLowerCase().contains("gọi xe")){
+            openAppWithPackageName("com.grabtaxi.passenger")
+        }
+        else if (text.toLowerCase().contains("chụp ảnh")) {
+            openAppWithPackageName("com.sec.android.app.camera")
+        }
+        else if (text.toLowerCase().contains("xem ảnh")) {
+            openAppWithPackageName("com.sec.android.gallery3d")
         }
         else {
             openAppWithPackageName("com.android.vending")
         }
+    }
+
+    fun call(number : String) {
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:" + number)
+        startActivity(intent)
     }
 
     fun openAppWithPackageName(name: String) {
